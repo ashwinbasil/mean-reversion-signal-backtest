@@ -123,13 +123,16 @@ def walk_forward_eval(df: pd.DataFrame,
     # Key diagnostic: how much did Sharpe drop from train to test?
     degradation = test_perf["sharpe_degradation"].iloc[0]
     if degradation < -0.3:
-        print(f"  [walk_forward] ⚠ Large Sharpe degradation ({degradation:.3f}). "
-              "Strong sign of in-sample overfitting.")
+     print(f"  [walk_forward] WARNING: Large Sharpe degradation ({degradation:.3f}). "
+          "Strong sign of in-sample overfitting.")
     elif degradation < 0:
-        print(f"  [walk_forward] Sharpe declined on test ({degradation:.3f}). "
-              "Expected. Check if test results are still positive.")
+     print(f"  [walk_forward] Sharpe declined on test ({degradation:.3f}). "
+          "Expected. Check if test results are still positive.")
+    elif degradation < 0.5:
+     print(f"  [walk_forward] Sharpe improved on test ({degradation:+.3f}). "
+          "Test period was favorable for this strategy.")
     else:
-        print(f"  [walk_forward] Sharpe held up on test ({degradation:+.3f}). "
-              "Unusually stable — worth investigating why.")
+     print(f"  [walk_forward] Large Sharpe improvement on test ({degradation:+.3f}). "
+          "Could indicate train period was unfavorable outlier. Investigate.")
 
     return test_perf

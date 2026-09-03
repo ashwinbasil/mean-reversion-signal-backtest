@@ -35,7 +35,7 @@ def run_ticker(ticker: str) -> dict:
     print(f"{'='*50}")
 
     # 1. Fetch and clean
-    df = fetch_stock_data(ticker, period="5y")
+    df = fetch_stock_data(ticker, period="10y")
     df = clean_data(df)
     df.to_csv(f"data/processed/{ticker}_stock.csv", index=False)
 
@@ -71,7 +71,7 @@ def run_ticker(ticker: str) -> dict:
                 "strategy_win_rate"]].to_string(index=False))
 
     # 8. Parameter sweep (in-sample, for reference only)
-    sweep = rsi_parameter_sweep(df, thresholds=(20, 25, 30, 35, 40),
+    sweep = rsi_parameter_sweep(df, thresholds=(30, 35, 40, 45),
                                 holding_period=HOLDING_PERIOD)
     sweep.to_csv(f"data/processed/{ticker}_rsi_parameter_sweep.csv", index=False)
 
@@ -81,7 +81,7 @@ def run_ticker(ticker: str) -> dict:
     wf = walk_forward_eval(df,
                            train_ratio=TRAIN_RATIO,
                            holding_period=HOLDING_PERIOD,
-                           thresholds=(20, 25, 30, 35, 40))
+                           thresholds=(30, 35, 40, 45))
 
     if not wf.empty:
         wf["ticker"] = ticker
@@ -106,10 +106,13 @@ def run_ticker(ticker: str) -> dict:
 def print_final_summary(all_results: list):
     """
     Aggregates in-sample and walk-forward metrics across all tickers.
-    This is the section most useful for comparing signal behaviour across assets.
+    Credible filter: only tickers with >= MIN_TEST_TRADES test trades
+    are included in aggregate statistics. Below that, Sharpe is noise.
     """
+    MIN_TEST_TRADES = 7
+
     print(f"\n\n{'='*60}")
-    print("  FINAL SUMMARY — ALL TICKERS")
+    print("  FINAL SUMMARY -- ALL TICKERS")
     print(f"{'='*60}")
 
     is_rows, wf_rows = [], []
@@ -130,24 +133,43 @@ def print_final_summary(all_results: list):
     if wf_rows:
         wf_summary = pd.concat(wf_rows, ignore_index=True)
         wf_summary.to_csv("data/processed/_summary_walk_forward.csv", index=False)
-        print("\n  Walk-Forward (the only results that matter):")
+
+        print("\n  Walk-Forward (all tickers):")
         print(wf_summary[["ticker", "train_sharpe", "test_sharpe",
                            "sharpe_degradation", "test_trade_count",
                            "test_win_rate", "best_threshold"]].to_string(index=False))
 
-        # Aggregate signal: does the strategy generalise?
-        mean_test_sharpe = wf_summary["test_sharpe"].mean()
-        pct_positive     = (wf_summary["test_sharpe"] > 0).mean() * 100
-        mean_degradation = wf_summary["sharpe_degradation"].mean()
-        print(f"\n  Aggregate signal across {len(wf_summary)} tickers:")
+        # Filter to credible results only
+        credible = wf_summary[wf_summary["test_trade_count"] >= MIN_TEST_TRADES].copy()
+        excluded = len(wf_summary) - len(credible)
+
+        print(f"\n  Credible only (>= {MIN_TEST_TRADES} test trades): "
+              f"{len(credible)}/{len(wf_summary)} tickers. "
+              f"{excluded} excluded (insufficient test signals).")
+
+        if credible.empty:
+            print("  No credible results. Lower thresholds or use more data.")
+            return
+
+        credible.to_csv("data/processed/_summary_credible.csv", index=False)
+        print("\n  Credible Walk-Forward Results:")
+        print(credible[["ticker", "train_sharpe", "test_sharpe",
+                         "sharpe_degradation", "test_trade_count",
+                         "test_win_rate", "best_threshold"]].to_string(index=False))
+
+        mean_test_sharpe = credible["test_sharpe"].mean()
+        pct_positive     = (credible["test_sharpe"] > 0).mean() * 100
+        mean_degradation = credible["sharpe_degradation"].mean()
+
+        print(f"\n  Aggregate (credible tickers only):")
         print(f"    Mean test Sharpe:        {mean_test_sharpe:.3f}")
         print(f"    % tickers positive:      {pct_positive:.0f}%")
         print(f"    Mean Sharpe degradation: {mean_degradation:.3f}")
 
         if mean_test_sharpe < 0:
-            print("  [FAIL] Signal does not generalise out-of-sample on this asset set.")
+            print("  [FAIL] Signal does not generalise out-of-sample.")
         elif mean_test_sharpe < 0.3:
-            print("  [WEAK] Marginal edge at best. Costs likely kill it.")
+            print("  [WEAK] Marginal edge. Costs likely kill it.")
         else:
             print("  [OK] Some signal present. Needs validation on more assets + regimes.")
 

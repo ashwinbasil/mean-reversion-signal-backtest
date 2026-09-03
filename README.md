@@ -90,46 +90,54 @@ To add tickers: append to any sector list. No other changes needed.
 
 ## Key Findings
 
-Tested across 15 US equities, 5 sectors, 5 years of data (2021-2026). Walk-forward split: 70% train, 30% test.
+Tested across 15 US equities, 5 sectors, 10 years of data. Walk-forward split: 70% train (2016-2023), 30% test (2023-2026).
 
 **Results filtered to tickers with >= 7 test trades. Below that, Sharpe ratio is statistically meaningless.**
+
+13 of 15 tickers met the credibility threshold. WMT and PFE excluded.
 
 ### Walk-Forward Results (Credible Only)
 
 | Ticker | Sector | Train Sharpe | Test Sharpe | Degradation | Test Trades | Win Rate |
 |--------|--------|-------------|-------------|-------------|-------------|----------|
-| XOM | Energy | 1.15 | 1.73 | +0.58 | 10 | 80% |
-| WMT | Consumer | 0.70 | 1.02 | +0.32 | 11 | 64% |
-| COST | Consumer | 0.64 | 1.05 | +0.42 | 14 | 64% |
-| JPM | Finance | 0.75 | 0.99 | +0.24 | 7 | 57% |
-| CVX | Energy | 0.42 | 0.44 | +0.01 | 8 | 50% |
-| UNH | Health | 0.94 | 0.11 | -0.83 | 12 | 58% |
-| MSFT | Tech | 1.11 | -0.43 | -1.54 | 9 | 56% |
+| JPM | Finance | 0.93 | 1.31 | +0.38 | 22 | 82% |
+| COP | Energy | 0.34 | 1.00 | +0.67 | 26 | 69% |
+| COST | Consumer | 0.56 | 1.00 | +0.44 | 18 | 67% |
+| AAPL | Tech | 0.46 | 1.02 | +0.56 | 7 | 86% |
+| GS | Finance | 0.65 | 0.56 | -0.09 | 13 | 62% |
+| GOOGL | Tech | 0.66 | 0.52 | -0.14 | 25 | 60% |
+| BAC | Finance | 0.62 | 0.39 | -0.23 | 22 | 64% |
+| XOM | Energy | 0.09 | 0.44 | +0.35 | 9 | 78% |
+| CVX | Energy | 0.37 | 0.10 | -0.28 | 8 | 50% |
+| JNJ | Health | 0.72 | 0.29 | -0.43 | 25 | 48% |
+| MSFT | Tech | 0.99 | 0.33 | -0.67 | 29 | 45% |
+| UNH | Health | 1.19 | -0.23 | -1.42 | 17 | 47% |
+| TGT | Consumer | 0.27 | -0.58 | -0.85 | 7 | 43% |
 
-8 of 15 tickers excluded: insufficient test signals at chosen threshold.
+**Aggregate (credible tickers): mean test Sharpe 0.47, 85% positive, mean degradation -0.13.**
 
 ### Sector Pattern
 
-| Sector | Signal |
+| Sector | Result |
 |--------|--------|
-| Energy | Positive. XOM test Sharpe 1.73 |
-| Consumer | Positive. WMT/COST both above 1.0 |
-| Finance | Positive. JPM holds well |
-| Health | Mixed. UNH shows overfitting |
-| Tech | Negative. MSFT overfitting confirmed |
+| Finance | Strong. JPM 1.31, GS/BAC positive |
+| Energy | Mixed. COP 1.00, XOM 0.44, CVX weak |
+| Consumer | Mixed. COST 1.00, TGT failed |
+| Tech | Mixed. AAPL positive, MSFT/GOOGL weak |
+| Health | Weak. JNJ marginal, UNH overfitting confirmed |
 
-**Finding:** RSI mean reversion shows sector-dependent behaviour. Energy and consumer stocks exhibit stronger mean-reverting dynamics. Tech stocks trend rather than revert — RSI signals underperform on them.
+**Finding:** No clean sector pattern. Finance and energy showed stronger results in the test period (2023-2026), but sample sizes per ticker remain small. Mean Sharpe degradation of -0.13 across credible tickers suggests limited overfitting — signal holds through time better than expected for a simple RSI rule.
 
-This is a descriptive finding across one 5-year period on 15 stocks. It is not a predictive claim.
+This is a descriptive finding across one 10-year period on 15 stocks. It is not a predictive claim.
 
 ### Honest Caveats
 
-- Test windows yield 1-14 trades per ticker at RSI < 30-40 threshold. Most are statistically weak.
-- 8 tickers excluded entirely for insufficient test signals.
-- All positive results are gross of taxes; net returns lower.
-- Same 5-year period (2021-2026) used for all tickers — no regime diversity.
+- 7-26 test trades per credible ticker. Minimum for statistical reliability is higher.
+- 2 tickers excluded for insufficient test signals even at RSI < 45.
+- All results gross of taxes. Net returns lower.
+- Single 10-year window — no regime diversity testing (bull/bear/flat separately).
 - Survivorship bias: all tickers are current S&P 500 constituents.
-- Transaction cost model (0.1% round-trip) is approximate. Real costs vary by broker and order size.
+- Transaction cost model (0.1% round-trip) is approximate.
 
 ---
 
@@ -226,4 +234,5 @@ Python 3.14
 Ashwin — BSc Mathematics, MSc Data Analytics (De Montfort University).
 Built to understand quantitative research methodology end-to-end.
 
+GitHub: [ashwinbasil](https://github.com/ashwinbasil)
 LinkedIn: [ashwin176](https://linkedin.com/in/ashwin176)

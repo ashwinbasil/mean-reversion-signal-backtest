@@ -3,10 +3,10 @@ import yfinance as yf
 import pandas as pd
 
 
-def fetch_stock_data(ticker: str, period: str = "5y") -> pd.DataFrame:
+def fetch_stock_data(ticker: str, period: str = "10y") -> pd.DataFrame:
     """
     Fetch historical OHLCV data for a given ticker.
-    Defaults to 5 years — 1y gives too few RSI signals to be meaningful.
+    Defaults to 10 years — 1y gives too few RSI signals to be meaningful.
     """
     try:
         stock = yf.Ticker(ticker)
