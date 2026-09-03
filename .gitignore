@@ -1,18 +1,18 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
 .venv/
 env/
 
 # Data outputs
 data/raw/
 data/processed/
+data/plots/
+
+# Plot outputs
+outputs/
 
 # OS / editor
 .DS_Store
 .vscode/
-outputs/AAPL_drawdown.png outputs/AAPL_price_signals.png outputs/AAPL_strategy_vs_bh.png outputs/GOOGL_drawdown.png outputs/GOOGL_price_signals.png outputs/GOOGL_strategy_vs_bh.png outputs/MSFT_drawdown.png outputs/MSFT_price_signals.png outputs/MSFT_strategy_vs_bh.png
-data/processed/*.csv
-outputs/*.png
-__pycache__/
-*.pyc
